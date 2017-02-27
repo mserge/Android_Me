@@ -32,6 +32,8 @@ public class AndroidMeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_android_me);
 
+        // TODO (5) Only create new fragments when there is no previously saved state
+
         // Create a new head BodyPartFragment
         // DONE (4) Set the list of image id's for the head fragment and set the position to the second image in the list
         BodyPartFragment headFragment = new BodyPartFragment(AndroidImageAssets.getHeads(), 1);
