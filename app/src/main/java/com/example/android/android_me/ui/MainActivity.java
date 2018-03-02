@@ -35,18 +35,28 @@ public class MainActivity extends AppCompatActivity implements MasterListFragmen
     private int bodyIndex;
     private int legIndex;
 
-    // TODO (3) Create a variable to track whether to display a two-pane or single-pane UI
+    //  (3) Create a variable to track whether to display a two-pane or single-pane UI
         // A single-pane display refers to phone screens, and two-pane to larger tablet screens
-
+    private boolean isTwoPane;
+    private Button nextButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // TODO (4) If you are making a two-pane display, add new BodyPartFragments to create an initial Android-Me image
+        // The "Next" button launches a new AndroidMeActivity
+        nextButton = (Button) findViewById(R.id.next_button);
+        if(findViewById(R.id.android_me_linear_layout)!=null){
+            isTwoPane = true;
+        //  (4) If you are making a two-pane display, add new BodyPartFragments to create an initial Android-Me image
+            final FragmentStrategy fragmentStrategy = new FragmentStrategy(this); // all indexes are zeroed
+            fragmentStrategy.invoke();
         // Also, for the two-pane display, get rid of the "Next" button in the master list fragment
-
+            nextButton.setVisibility(View.GONE);
+        } else{
+            isTwoPane = false;
+        }
     }
 
     // Define the behavior for onImageSelected
@@ -54,13 +64,34 @@ public class MainActivity extends AppCompatActivity implements MasterListFragmen
         // Create a Toast that displays the position that was clicked
         Toast.makeText(this, "Position clicked = " + position, Toast.LENGTH_SHORT).show();
 
-        // TODO (5) Handle the two-pane case and replace existing fragments right when a new image is selected from the master list
-        // The two-pane case will not need a Bundle or Intent since a new activity will not be started;
-        // This is all happening in this MainActivity and one fragment will be replaced at a time
-
-
         // Based on where a user has clicked, store the selected list index for the head, body, and leg BodyPartFragments
+            extractIndexes(position);
+        if(isTwoPane) {
+            //  (5) Handle the two-pane case and replace existing fragments right when a new image is selected from the master list
+            // The two-pane case will not need a Bundle or Intent since a new activity will not be started;
+            // This is all happening in this MainActivity and one fragment will be replaced at a time
+            final ReplaceFragmentStrategy replaceFragmentStrategy = new ReplaceFragmentStrategy(this);
+            prepareFragmentStrategy(replaceFragmentStrategy);
+            replaceFragmentStrategy.invoke();
+        } else {
+            final Intent intent = new Intent(this, AndroidMeActivity.class);
+            prepareIntent(intent);
+            nextButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startActivity(intent);
+                }
+            });
+        }
+    }
 
+    private void prepareFragmentStrategy(ReplaceFragmentStrategy replaceFragmentStrategy) {
+        replaceFragmentStrategy.setBodyIndex(bodyIndex);
+        replaceFragmentStrategy.setHeadIndex(headIndex);
+        replaceFragmentStrategy.setLegIndex(legIndex);
+    }
+
+    private void extractIndexes(int position) {
         // bodyPartNumber will be = 0 for the head fragment, 1 for the body, and 2 for the leg fragment
         // Dividing by 12 gives us these integer values because each list of images resources has a size of 12
         int bodyPartNumber = position /12;
@@ -79,7 +110,9 @@ public class MainActivity extends AppCompatActivity implements MasterListFragmen
                 break;
             default: break;
         }
+    }
 
+    private void prepareIntent(Intent intent) {
         // Put this information in a Bundle and attach it to an Intent that will launch an AndroidMeActivity
         Bundle b = new Bundle();
         b.putInt("headIndex", headIndex);
@@ -87,18 +120,7 @@ public class MainActivity extends AppCompatActivity implements MasterListFragmen
         b.putInt("legIndex", legIndex);
 
         // Attach the Bundle to an intent
-        final Intent intent = new Intent(this, AndroidMeActivity.class);
         intent.putExtras(b);
-
-        // The "Next" button launches a new AndroidMeActivity
-        Button nextButton = (Button) findViewById(R.id.next_button);
-        nextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(intent);
-            }
-        });
-
     }
 
 }
